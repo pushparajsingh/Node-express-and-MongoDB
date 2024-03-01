@@ -14,6 +14,4 @@ const sendCookie = (user, res, message, statusCode = 200) => {
     });
 };
 
-
-
 module.exports = sendCookie;
