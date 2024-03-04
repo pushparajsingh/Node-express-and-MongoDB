@@ -32,7 +32,7 @@ const addTask = async (req, res, next) => {
 const editTask = async (req, res, next) => {
   try {
     const { _id } = req.body;
-    const data = await Task.find({ _id });
+    const data = await Task.findById({ _id });
     if (!data) {
       return errorMiddleware(
         {
@@ -40,8 +40,7 @@ const editTask = async (req, res, next) => {
           success: false,
           message: "Task is not present...",
         },
-        res,
-        data
+        res
       );
     }
     return errorMiddleware(
@@ -60,33 +59,89 @@ const editTask = async (req, res, next) => {
 const deleteTask = async (req, res, next) => {
   try {
     const { _id } = req.body;
-    const data = await Task.deleteOne({ _id });
-    if(data)
-    return errorMiddleware({
-      statusCode: 200,
-      success: true,
-      message: "get Task successfully...",
-    },
-    res,data);
-    
+    const task = await Task.findById({ _id });
+    if (!task)
+      return errorMiddleware(
+        {
+          statusCode: 200,
+          success: true,
+          message: "Task is not Exist",
+        },
+        res
+      );
+    await task.deleteOne();
+    return errorMiddleware(
+      {
+        statusCode: 200,
+        success: true,
+        message: "Task is deleted successfully",
+      },
+      res
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+const userTask = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const task = await Task.find({ user:id });
+    if (!task)
+      return errorMiddleware(
+        {
+          statusCode: 200,
+          success: true,
+          message: "Task is not Exist",
+        },
+        res
+      );
+    return errorMiddleware(
+      {
+        statusCode: 200,
+        success: true,
+        message: "Task is deleted successfully",
+      },
+      res,
+      task
+    );
   } catch (error) {
     next(error);
   }
 };
 const updateTask = async (req, res, next) => {
   try {
+    const _id = req.params.id;
     const { task, description, isCompleted, user } = req.body;
-    const data = await Task.updateOne({ _id },{$set:{ task, description, isCompleted, user }});
-    if(data){
-      return errorMiddleware({
+    const singleTask = await Task.findOne({ _id });
+   
+    if (!singleTask) {
+      return errorMiddleware(
+        {
+          statusCode: 404,
+          success: false,
+          message: "Task not found"
+        },
+        res
+      );
+    }
+   
+    const data = await Task.updateOne(
+      { "_id": _id },
+      { $set: { task, description, isCompleted, user } },
+      { upsert: true }
+    );
+   
+    return errorMiddleware(
+      {
         statusCode: 200,
         success: true,
-        message: "Update successfully...",
+        message: "Update successful",
       },
-      res,data);
-    }
+      res,
+      data
+    );
   } catch (error) {
-    next()
+    next(error); 
   }
 };
 
@@ -95,4 +150,5 @@ module.exports = {
   editTask,
   deleteTask,
   updateTask,
+  userTask
 };

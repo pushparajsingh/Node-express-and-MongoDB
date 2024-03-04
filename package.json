@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "push":"./gitpush.sh"
+    "push": "./gitpush.sh"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
